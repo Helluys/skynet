@@ -3,32 +3,45 @@ import scala.util._
 import scala.io.StdIn._
 import scala.collection.mutable.ListBuffer
 import java.util.LinkedList
+import scala.collection.mutable.MutableList
 
 object Player extends App {
-    // n: the total number of nodes in the level, including the gateways
-    // l: the number of links
-    // e: the number of exit gateways
-    val Array(n, l, e) = (readLine split " ").map (_.toInt)
 
-    val links = new LinkedList[(Int, Int)]()
-    for(i <- 0 until l) {
-        val Array(n1, n2) = (readLine split " ").map (_.toInt)
-        links.add((n1, n2))
-    }
-    val gates = 0 until e map {i => readLine.toInt}
-
-    val graph = new Graph(n, links, gates)
-    Console.err.println(s"Graph with $n $l $e")
-    
-    // game loop
-    while(!Thread.interrupted()) {
-        val si = readLine.toInt // The index of the node on which the Skynet agent is positioned this turn
-        Console.err.println(s"agent at $si")
+    private def init() = {
+        // n: the total number of nodes in the level, including the gateways
+        // l: the number of links
+        // e: the number of exit gateways
+        val Array(n, l, e) = (readLine split " ").map (_.toInt)
         
-        // Write an action using println
-        // To debug: Console.err.println("Debug messages...")
+        val links = new MutableList[(Int, Int)]()
+        for(i <- 0 until l) {
+            val Array(n1, n2) = (readLine split " ").map (_.toInt)
+            links += ((n1, n2))
+        }
+        val gates = 0 until e map {i => readLine.toInt}
+        
+        new Graph(n, links, gates)
+    }
 
-        // Example: 0 1 are the indices of the nodes you wish to sever the link between
-        println("0 1")
+    private def solve(si: Int, graph: Graph) : (Int, Int) = {
+        // Compute distances from si
+        val distances = graph.distances(si)
+        Console.err.println(distances)
+
+        (0, 1)
+    }
+    
+    val graph = init()
+    Console.err.println(graph)
+    
+    while(!Thread.interrupted()) {
+        // The index of the node on which the Skynet agent is positioned this turn
+        val si = readLine.toInt
+        Console.err.println(s"agent at $si")
+
+        val link = solve(si, graph)
+        
+        graph.cut(link)
+        println(link._1 + " " + link._2)
     }
 }
