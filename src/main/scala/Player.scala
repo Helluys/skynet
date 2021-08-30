@@ -2,47 +2,28 @@ import math._
 import scala.util._
 import scala.io.StdIn._
 import scala.collection.mutable.ListBuffer
+import java.util.LinkedList
 
-class Node (val id: Integer, val links : List[Integer]) {
-    def isLinked(other: Integer) =
-        links.contains(other)
-}
-
-/**
- * Auto-generated code below aims at helping you parse
- * the standard input according to the problem statement.
- **/
 object Player extends App {
-    while (true) {
-        val line = readLine()
-        Console.err.println(line)
-    }
-
     // n: the total number of nodes in the level, including the gateways
     // l: the number of links
     // e: the number of exit gateways
     val Array(n, l, e) = (readLine split " ").map (_.toInt)
-  
-    val linksBuf = new ListBuffer[(Integer, Integer)]()
+
+    val links = new LinkedList[(Int, Int)]()
     for(i <- 0 until l) {
-        // n1: N1 and N2 defines a link between these nodes
         val Array(n1, n2) = (readLine split " ").map (_.toInt)
-        linksBuf.append((n1, n2))
+        links.add((n1, n2))
     }
+    val gates = 0 until e map {i => readLine.toInt}
 
-    val exitsBuf = 0 to e map {i => readLine.toInt}
-
-    val nodes = 0 to n map {
-        i => new Node(i, linksBuf
-                            .filter { case (n1, n2) => n1 == i || n2 == i }
-                            .map{ case (n1, n2) => if (n1 == i) n2 else n1 }
-                            .toList
-        )
-    }
-
+    val graph = new Graph(n, links, gates)
+    Console.err.println(s"Graph with $n $l $e")
+    
     // game loop
-    while(true) {
+    while(!Thread.interrupted()) {
         val si = readLine.toInt // The index of the node on which the Skynet agent is positioned this turn
+        Console.err.println(s"agent at $si")
         
         // Write an action using println
         // To debug: Console.err.println("Debug messages...")
