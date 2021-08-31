@@ -25,7 +25,7 @@ object Player extends App {
 
     private def solve(si: Int, graph: Graph) : (Int, Int) = {
         // Compute distances from si
-        val distances = graph.distances(si)
+        val distances = graph.distancesToGates()
         Console.err.println(distances)
 
         (0, 1)
@@ -37,11 +37,11 @@ object Player extends App {
     while(!Thread.interrupted()) {
         // The index of the node on which the Skynet agent is positioned this turn
         val si = readLine.toInt
-        Console.err.println(s"agent at $si")
+        Console.err.println(s"Agent at $si")
 
         val link = solve(si, graph)
-        
         graph.cut(link)
+
         println(link._1 + " " + link._2)
     }
 }

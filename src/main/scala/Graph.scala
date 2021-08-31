@@ -2,11 +2,13 @@ import java.util.LinkedList
 import scala.collection.mutable
 
 class Graph (val n: Int, val links : mutable.MutableList[(Int, Int)], val gates: Seq[Int]) {
-    def distances (from: Int) : Map[Int, Int] = {
-        distancesStep(from, 0,  mutable.Map())
+    def distancesToGates () : Map[Int, Int] = {
+        val dists = distances(gates.apply(0), 0, mutable.Map())
+        1 until gates.size map {node => distances(gates.apply(node), 0, dists)}
+        dists.toMap
     }
 
-    private def distancesStep(from: Int, curDist: Int, dists: mutable.Map[Int, Int]) : Map[Int, Int] = {
+    private def distances(from: Int, curDist: Int, dists: mutable.Map[Int, Int]) : mutable.Map[Int, Int] = {
         dists.update(from, curDist)
 
         links
@@ -17,13 +19,13 @@ class Graph (val n: Int, val links : mutable.MutableList[(Int, Int)], val gates:
                 dists.get(node)
                     match {
                         case Some(d) =>
-                            if (curDist < d) distancesStep(node, curDist+1, dists)
+                            if (curDist < d) distances(node, curDist+1, dists)
                         case None =>
-                                distancesStep(node, curDist+1, dists)
+                                distances(node, curDist+1, dists)
                     }
             })
         
-        dists.toMap
+        dists
     }
 
     def cut(link: (Int, Int)) {

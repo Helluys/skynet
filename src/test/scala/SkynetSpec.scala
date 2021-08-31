@@ -6,27 +6,34 @@ import java.io.PipedOutputStream
 import org.scalatest.BeforeAndAfter
 import java.io.BufferedReader
 import java.io.InputStreamReader
+import org.scalatest.BeforeAndAfterAll
 
-class SkynetSpec extends AnyFlatSpec with BeforeAndAfter {
+class SkynetSpec extends AnyFlatSpec with BeforeAndAfter with BeforeAndAfterAll {
 
-  val in = new PipedOutputStream()
-  val inPipe = new PipedInputStream(in)
-  val out = new PipedInputStream()
-  val outPipe = new PipedOutputStream(out)
-  val reader = new BufferedReader(new InputStreamReader(out))
-  val playerThread = new Thread (new PlayerRunnable(inPipe, outPipe))
+  var in = new PipedOutputStream()
+  var inPipe = new PipedInputStream(in)
+  var out = new PipedInputStream()
+  var outPipe = new PipedOutputStream(out)
+  var reader = new BufferedReader(new InputStreamReader(out))
+  var playerThread = new Thread (new PlayerRunnable(inPipe, outPipe))
 
   before {
-      playerThread.start()
+    in = new PipedOutputStream()
+    inPipe = new PipedInputStream(in)
+    out = new PipedInputStream()
+    outPipe = new PipedOutputStream(out)
+    reader = new BufferedReader(new InputStreamReader(out))
+    playerThread = new Thread (new PlayerRunnable(inPipe, outPipe))
+    playerThread.start()
   }
 
   after {
+    //playerThread.interrupt()
     in.close()
     inPipe.close()
     out.close()
     outPipe.close()
     reader.close()
-    playerThread.interrupt()
   }
 
   def putLine(line: String) = {
@@ -41,10 +48,15 @@ class SkynetSpec extends AnyFlatSpec with BeforeAndAfter {
   def getLine() =
     reader.readLine()
 
-  "Main" should "cut link 1-2 in simple case" in {
+ "Main" should "cut link 1-2 in simple case" in {
     putLines(Array("3 2 1", "0 1", "1 2", "2"))
-    Thread.sleep(1000)
     putLine("1")
+    assert(getLine() == "1 2")
+  }
+
+  "Graph" should "compute distances correctly" in {
+    putLines(Array("7 7 2", "0 1", "1 2", "2 3", "2 5", "3 4", "5 4", "4 6", "0", "6"))
+    putLine("3")
     assert(getLine() == "1 2")
   }
 }
