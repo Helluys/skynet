@@ -20,14 +20,10 @@ object Player extends App {
         }
         val gates = 0 until e map {i => readLine.toInt}
         
-        new Graph(n, links, gates)
+        new Graph(n, links.toList, gates)
     }
 
     private def solve(si: Int, graph: Graph) : (Int, Int) = {
-        // Compute distances from si
-        val distances = graph.distancesToGates()
-        Console.err.println(distances)
-
         (0, 1)
     }
     
