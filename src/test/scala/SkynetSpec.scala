@@ -53,10 +53,4 @@ class SkynetSpec extends AnyFlatSpec with BeforeAndAfter with BeforeAndAfterAll 
     putLine("1")
     assert(getLine() == "1 2")
   }
-
-  "Graph" should "compute distances correctly" in {
-    putLines(Array("7 7 2", "0 1", "1 2", "2 3", "2 5", "3 4", "5 4", "4 6", "0", "6"))
-    putLine("3")
-    assert(getLine() == "1 2")
-  }
 }

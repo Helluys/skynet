@@ -1,18 +1,19 @@
 import java.util.LinkedList
 import scala.collection.mutable
 
-class Graph (val n: Int, val links : List[(Int, Int)], val gates: Seq[Int]) {
-    def path(from: Int, to: Int, closed: List[Int] = List()) : List[Int] = {
+class Graph (val n: Int, var links : List[(Int, Int)], val gates: Seq[Int]) {
+    def path(from: Int, to: Int, closed: List[Int] = List()) : Option[List[Int]]
+        = paths(from, to, closed).reduceOption((p1, p2) => if (p1.size < p2.size) p1 else p2)
+
+    def paths(from: Int, to: Int, closed: List[Int] = List()) : List[List[Int]] = {
         if (from == to)
-            List(to)
-        else {
-            val newClosed = from :: closed
-            from :: connectedNodes(from)
-                .filterNot(newClosed.contains(_))
-                .map(path(_, to, newClosed))
-                .filter(_.last == to)
-                .reduceOption((s1, s2) => if (s1.size < s2.size) s1 else s2).getOrElse(List())
-        }
+            List(List(to))
+        else 
+            connectedNodes(from)
+                .filterNot(closed.contains(_))
+                .flatMap(paths(_, to, from :: closed))
+                .map(path => from :: path)
+                .filter(_.lastOption.exists(_ == to))
     }
 
     def distancesToGates () : Map[Int, Int] = {
@@ -21,7 +22,8 @@ class Graph (val n: Int, val links : List[(Int, Int)], val gates: Seq[Int]) {
         dists.toMap
     }
 
-    private def distances(from: Int, curDist: Int, dists: mutable.Map[Int, Int]) : mutable.Map[Int, Int] = {
+    private def distances(from: Int, curDist: Int, dists: mutable.Map[Int, Int])
+     : mutable.Map[Int, Int] = {
         dists.update(from, curDist)
 
         connectedNodes(from)
@@ -44,7 +46,7 @@ class Graph (val n: Int, val links : List[(Int, Int)], val gates: Seq[Int]) {
             .toList
 
     def cut(link: (Int, Int)) {
-        links.drop(links.indexOf(link))
+        links = links.filterNot(_ == link)
     }
 
     override def toString(): String = links.map({case (i1, i2) => i1 + "-" + i2}).mkString(", ")
