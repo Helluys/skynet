@@ -24,7 +24,7 @@ object Player extends App {
 
     private def pickLink(si: Int, graph: Graph) : (Int, Int) = {
         // Find all paths to gates
-        val paths = graph.gates.flatMap(graph.paths(si, _))
+        val paths = graph.gates.flatMap(graph.path(si, _))
 
         // Get shortest paths only
         val minSize = paths.map(_.size).min
@@ -45,19 +45,15 @@ object Player extends App {
     val graph = init()
     Console.err.println(graph)
     
-    try {
-        while(!Thread.interrupted()) {
-            // The index of the node on which the Skynet agent is positioned this turn
-            val si = readLine.toInt
-            Console.err.println(s"Agent at $si")
+    while(!Thread.interrupted()) {
+        // The index of the node on which the Skynet agent is positioned this turn
+        val si = readLine.toInt
+        Console.err.println(s"Agent at $si")
 
-            // Decide which link to cut
-            val link = pickLink(si, graph)
-            
-            graph.cut(link)
-            println(link._1 + " " + link._2)
-        }
-    } catch {
-        case e: NumberFormatException => Console.err.println("Invalid input")
+        // Decide which link to cut
+        val link = pickLink(si, graph)
+        
+        graph.cut(link)
+        println(link._1 + " " + link._2)
     }
 }

@@ -1,46 +1,43 @@
 import java.util.LinkedList
+import scala.collection.mutable.Queue
+import scala.collection.mutable.HashMap
 import scala.collection.mutable
 
 class Graph (val n: Int, var links : List[(Int, Int)], val gates: Seq[Int]) {
-    def path(from: Int, to: Int, closed: List[Int] = List()) : Option[List[Int]]
-        = paths(from, to, closed).reduceOption((p1, p2) => if (p1.size < p2.size) p1 else p2)
+    def path(from: Int, to: Int) : Option[List[Int]] = {
+        val ancestors = new HashMap[Int, Int]()
+        val queue = new Queue[Int]()
+        queue.enqueue(from)
 
-    def paths(from: Int, to: Int, closed: List[Int] = List()) : List[List[Int]] = {
-        if (from == to)
-            List(List(to))
-        else 
-            connectedNodes(from)
-                .filterNot(closed.contains(_))
-                .flatMap(paths(_, to, from :: closed))
-                .map(path => from :: path)
-                .filter(_.lastOption.exists(_ == to))
+        var path = Option.empty[List[Int]]
+        while(path.isEmpty)
+            path = pathStep(from, to, queue, ancestors)
+        path
     }
 
-    def distancesToGates () : Map[Int, Int] = {
-        val dists = distances(gates.apply(0), 0, mutable.Map())
-        1 until gates.size map {node => distances(gates.apply(node), 0, dists)}
-        dists.toMap
+    private def pathStep(from: Int, to: Int, queue: Queue[Int], ancestors: mutable.Map[Int, Int]) : Option[List[Int]] = {
+        queue.dequeueFirst(i => true) match {
+            case Some(n) => {
+                if (n == to) Option.apply(walkBack(n, ancestors.toMap))
+                else {
+                    val neighbours = connected(n).filterNot(ancestors.contains(_)).filterNot(_ == from)
+                    neighbours.foreach(queue.enqueue(_))
+                    neighbours.foreach(ancestors.update(_, n))
+                    Option.empty
+                }
+            }
+            case None => Option.empty
+        }
     }
 
-    private def distances(from: Int, curDist: Int, dists: mutable.Map[Int, Int])
-     : mutable.Map[Int, Int] = {
-        dists.update(from, curDist)
-
-        connectedNodes(from)
-            .foreach(node => {
-                dists.get(node)
-                    match {
-                        case Some(d) =>
-                            if (curDist < d) distances(node, curDist+1, dists)
-                        case None =>
-                            distances(node, curDist+1, dists)
-                    }
-            })
-        
-        dists
+    private def walkBack(node: Int, ancestors: Map[Int, Int]) : List[Int] = {
+        var path = List(node)
+        while (ancestors.contains(path.head)) 
+            path = ancestors.apply(path.head) :: path
+        path
     }
 
-    def connectedNodes(node: Int) = links
+    def connected(node: Int) = links
             .filter(l => l._1 == node || l._2 == node)
             .map(l => if (l._1 == node) l._2 else l._1)
             .toList

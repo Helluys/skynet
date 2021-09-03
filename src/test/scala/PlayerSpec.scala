@@ -8,7 +8,7 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 import org.scalatest.BeforeAndAfterAll
 
-class SkynetSpec extends AnyFlatSpec with BeforeAndAfter with BeforeAndAfterAll {
+class PlayerSpec extends AnyFlatSpec with BeforeAndAfter with BeforeAndAfterAll {
 
   var in = new PipedOutputStream()
   var inPipe = new PipedInputStream(in)
@@ -28,7 +28,6 @@ class SkynetSpec extends AnyFlatSpec with BeforeAndAfter with BeforeAndAfterAll 
   }
 
   after {
-    //playerThread.interrupt()
     in.close()
     inPipe.close()
     out.close()
